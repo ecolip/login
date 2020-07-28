@@ -70,7 +70,9 @@
             email: '',
             password: '',
           },
-          token: ''
+          token: '',
+          // products: [],
+          // pagination: {}
         };
       },
       methods: {
@@ -79,31 +81,38 @@
           axios.post(api, this.user).then((response) => {
             const token = response.data.token;
             const expired = response.data.expired;
-            console.log(response);
 
             document.cookie = `hextoken=${token}; expires=${new Date(expired * 1000)}; path=/`;
-            // var myCookie = document.cookie.replace(/(?:(?:^|.*;\s*)test2\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-            // console.log(myCookie);
-
           }).catch((error) => {
             console.log(error);
           });
         },
+        signin() {
+          const api = `${apiPath}auth/login`;
+          axios.post(api, this.user).then((res) => {
+            
+          })
+        },
         signout() {
-          // var token = s2SbqSgH6HIqAngJjbsUgqRFqNNPwzZcfOJavTPKjre5v7m1esvGPeWFtIdW;
-          // axios.defaults.headers['Authorization'] = `Bearer ${token}`;// 請加入 Token
+          document.cookie = `hextoken=; expires=; path=/`;
         },
         getData() {
           // 取得 token 的 cookies（注意取得的時間點）
           // 詳情請見：https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie
-          this.token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+          this.token = document.cookie.replace(/(?:(?:^|.*;\s*)hextoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+          console.log('token', this.token);
           
-          // API
-          const api = `${apiPath}${uuid}/admin/ec/products`
-          // 將 Token 加入到 Headers 內
-
+          //API
+          const api = `${apiPath}${uuid}/admin/ec/products`;
+          //將 Token 加入到 Headers 內
+          axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
           // 請自行完成 Ajax
-          
+          axios.get(api).then((res) => {
+            console.log(res);
+            this.products = res.data.data;
+            this.pagination = res.data.meta.pagination;
+            console.log(this.products, this.pagination);
+          });
         }
       },
     })
